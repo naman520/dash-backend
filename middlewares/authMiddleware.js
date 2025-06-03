@@ -17,7 +17,7 @@ module.exports = {
   },
 checkSession: async (req, res, next) => {
     try {
-        // Get token from cookies or Authorization header
+        // Get token from cookies
         const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
 
         if (!token) {
@@ -38,8 +38,6 @@ checkSession: async (req, res, next) => {
                 error: 'Session expired or invalid' 
             });
         }
-
-        // Attach user data to request
         req.user = decoded;
         next();
     } catch (err) {

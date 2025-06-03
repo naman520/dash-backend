@@ -108,6 +108,7 @@ login: async (req, res) => {
     res.json({
       success: true,
       message: 'Login successful',
+      role: user.role,
       data: userData,
       token: token 
     });
