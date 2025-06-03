@@ -12,7 +12,6 @@ router.post('/logout', checkSession, authController.logout);
 /* router.post('/register', validateRegistration, authController.register); */
 
 router.post('/register', checkSession, requireRole('admin'), validateRegistration, authController.register);
-router.post('/register', checkSession, requireRole('admin'), validateRegistration, authController.register);
 router.get('/getAllUsers', checkSession, requireRole('admin'), authController.getAllUsers);
 
 module.exports = router;
