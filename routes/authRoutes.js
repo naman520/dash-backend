@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const { validateRegistration, checkSession } = require('../middlewares/authMiddleware');
 const { requireRole } = require('../middlewares/roleMiddleware');
+const verifyToken = require('../middlewares/verifyToken');
 
 // Public routes
 router.post('/login', authController.login);
@@ -13,5 +14,8 @@ router.post('/logout', checkSession, authController.logout);
 
 router.post('/register', checkSession, requireRole('admin'), validateRegistration, authController.register);
 router.get('/getAllUsers', checkSession, requireRole('admin'), authController.getAllUsers);
+router.get('/me', verifyToken, (req, res) => {
+    res.json({user : req.user})
+})
 
 module.exports = router;
