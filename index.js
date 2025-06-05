@@ -8,11 +8,11 @@ const cookieParser = require('cookie-parser');
 const protectedRoutes = require('./routes/protectedRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 
 app.use(cors({
- // origin: `http://localhost:3000`, // local link 
-  origin: `https://dashboard-pearl-five-74.vercel.app/`, // production link 
+  //origin: `http://localhost:3001`, // local link 
+  origin: `https://dashboard-pearl-five-74.vercel.app`, // production link 
   credentials: true
 }));
 app.use(bodyParser.json());
