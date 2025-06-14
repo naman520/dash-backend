@@ -7,7 +7,7 @@ require('dotenv').config();
 module.exports = {
 register: async (req, res) => {
     try {
-        const { username, email, password, role = 'user' } = req.body;
+        const { username, email, password, role = 'user', teamId } = req.body;
 
         if (!username || !email || !password) {
             return res.status(400).json({ 
@@ -30,6 +30,25 @@ register: async (req, res) => {
             });
         }
 
+        // Validate team assignment
+        let finalTeamId = teamId;
+        if (role === 'admin') {
+            finalTeamId = 0; // Force admin to team 0
+        } else if (!teamId || teamId === 0) {
+            finalTeamId = 1; // Default users to team 1
+        }
+
+        // Validate that the team exists (except for team 0)
+        if (finalTeamId !== 0) {
+            const team = await userModel.getTeamById(finalTeamId);
+            if (!team) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Invalid team specified'
+                });
+            }
+        }
+
         const exists = await userModel.userExists(username, email);
         if (exists) {
             return res.status(400).json({ 
@@ -43,7 +62,8 @@ register: async (req, res) => {
             email, 
             password, 
             role,
-            req.user.userId 
+            req.user.userId,
+            finalTeamId
         );
 
         res.status(201).json({
@@ -53,7 +73,8 @@ register: async (req, res) => {
                 id: user.id,
                 username: user.username,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                team_id: user.team_id
             }
         });
         
@@ -86,7 +107,7 @@ login: async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role, teamId: user.team_id },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -99,8 +120,8 @@ login: async (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'None',
+      secure: false,
+      sameSite: 'lax',
       maxAge: 3600000, 
     });
 
@@ -109,6 +130,8 @@ login: async (req, res) => {
       success: true,
       message: 'Login successful',
       role: user.role,
+      teamId: user.team_id,
+      teamName: user.team_name,
       data: userData,
       token: token 
     });
@@ -156,6 +179,7 @@ logout: async (req, res) => {
   }
 },
 
+
 getAllUsers: async (req, res) => {
     try {
       const users = await userModel.getAllUsers();
@@ -171,4 +195,72 @@ getAllUsers: async (req, res) => {
       });
     }
   },
+
+updateUser: async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, email, role, team_id } = req.body;
+    
+    // Validate required fields
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "User ID is required"
+      });
+    }
+
+    const updateData = {
+      username,
+      email,
+      newRole: role,
+      teamId: team_id
+    };
+
+    const updatedUser = await userModel.updateUser(id, updateData);
+    
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: updatedUser,
+      message: "User updated successfully"
+    });
+  } catch (err) {
+    console.error('Update user error:', err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update user",
+    });
+  }
+},
+
+  // Get current user info with team details
+  getCurrentUser: async (req, res) => {
+    try {
+      const user = await userModel.findUserById(req.user.userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        });
+      }
+
+      const { password_hash, ...userData } = user;
+      res.json({
+        success: true,
+        data: userData
+      });
+    } catch (err) {
+      console.error('Get current user error:', err);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch user data'
+      });
+    }
+  }
 };
