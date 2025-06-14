@@ -19,7 +19,7 @@ const app = express();
 // Middleware
 app.use(cors({
   //origin: `http://localhost:3001`, // local link 
-  origin: `https://dashboard-pearl-five-74.vercel.app/`, // production link 
+  origin: `https://dashboard-pearl-five-74.vercel.app`, // production link 
   credentials: true,
 }));
 app.use(bodyParser.json());
