@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const protectedRoutes = require('./routes/protectedRoutes');
+const bodyParser = require('body-parser')
 
 // Initialize express app
 const app = express();
@@ -21,7 +22,7 @@ app.use(cors({
   origin: `https://dashboard-pearl-five-74.vercel.app`, // production link 
   credentials: true,
 }));
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Route setup
