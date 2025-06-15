@@ -18,7 +18,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  //origin: `http://localhost:3001`, // local link 
+  //origin: `http://localhost:3000`, // local link 
   origin: `https://dashboard-pearl-five-74.vercel.app`, // production link 
   credentials: true,
 }));
